@@ -202,24 +202,4 @@ export class TodoController {
   // ): Promise<Todo[]> {
   //   return this.todoRepository.find(filter);
   // }
-
-  // @patch('/todos')
-  // @response(200, {
-  //   description: 'Todo PATCH success count',
-  //   content: {'application/json': {schema: CountSchema}},
-  // })
-  // async updateAll(
-  //   @requestBody({
-  //     content: {
-  //       'application/json': {
-  //         schema: getModelSchemaRef(Todo, {partial: true}),
-  //       },
-  //     },
-  //   })
-  //   todo: Todo,
-  //   @param.where(Todo) where?: Where<Todo>,
-  // ): Promise<Count> {
-  //   return this.todoRepository.updateAll(todo, where);
-  // }
-
 }
