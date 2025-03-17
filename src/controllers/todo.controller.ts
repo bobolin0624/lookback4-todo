@@ -1,17 +1,24 @@
 import {inject} from '@loopback/core';
+import {repository} from '@loopback/repository';
 import {
+  del,
+  get,
   getModelSchemaRef,
   HttpErrors,
+  param,
   post,
   requestBody,
   response
 } from '@loopback/rest';
 import {Item, Todo} from '../models';
+import {TodoRepository} from '../repositories';
 import {TodoService} from '../services/todo.service';
 
 export class TodoController {
   constructor(
     @inject('services.TodoService') private todoService: TodoService,
+    @repository(TodoRepository)
+    public todoRepository: TodoRepository,
   ) { }
 
   @post('/todos')
@@ -86,6 +93,50 @@ export class TodoController {
     return this.todoService.createTodoWithItems(todo, items);
   }
 
+  @get('/todos/{id}')
+  @response(200, {
+    description: 'Get not be deleted todo with items.',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Todo, {includeRelations: true}),
+      },
+    },
+  })
+  async findById(
+    @param.path.number('id') id: number,
+  ): Promise<Todo> {
+    const todo = await this.todoRepository.findOne({
+      where: {id, isDeleted: false},
+      include: [
+        {
+          relation: 'items'
+        }
+      ]
+    });
+    if (!todo) {
+      throw new HttpErrors.NotFound('Todo not found or has been deleted.')
+    }
+    return todo
+  }
+
+  @del('/todos/{id}')
+  @response(204, {
+    description: 'Todo deleted successfully.',
+  })
+  async deleteById(@param.path.number('id') id: number): Promise<void> {
+    const todo = await this.todoRepository.findById(id);
+    // 無此 todo
+    if (!todo) {
+      throw new HttpErrors.NotFound('Todo not found.');
+    }
+
+    todo.status = 'DELETED'
+    todo.isDeleted = true
+    todo.updatedAt = new Date().toISOString();
+
+    await this.todoRepository.updateById(id, todo);
+  }
+
   // @get('/todos')
   // @response(200, {
   //   description: 'Array of Todo model instances',
@@ -123,21 +174,7 @@ export class TodoController {
   //   return this.todoRepository.updateAll(todo, where);
   // }
 
-  // @get('/todos/{id}')
-  // @response(200, {
-  //   description: 'Todo model instance',
-  //   content: {
-  //     'application/json': {
-  //       schema: getModelSchemaRef(Todo, {includeRelations: true}),
-  //     },
-  //   },
-  // })
-  // async findById(
-  //   @param.path.number('id') id: number,
-  //   @param.filter(Todo, {exclude: 'where'}) filter?: FilterExcludingWhere<Todo>
-  // ): Promise<Todo> {
-  //   return this.todoRepository.findById(id, filter);
-  // }
+
 
   // @patch('/todos/{id}')
   // @response(204, {
@@ -168,11 +205,5 @@ export class TodoController {
   //   await this.todoRepository.replaceById(id, todo);
   // }
 
-  // @del('/todos/{id}')
-  // @response(204, {
-  //   description: 'Todo DELETE success',
-  // })
-  // async deleteById(@param.path.number('id') id: number): Promise<void> {
-  //   await this.todoRepository.deleteById(id);
-  // }
+
 }
