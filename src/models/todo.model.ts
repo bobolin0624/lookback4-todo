@@ -39,6 +39,12 @@ export class Todo extends Entity {
   })
   updatedAt?: string;
 
+  @property({
+    type: 'boolean',
+    default: () => false,
+  })
+  isDeleted: boolean;
+
   @hasMany(() => Item)
   items: Item[];
 
