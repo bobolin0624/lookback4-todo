@@ -79,12 +79,10 @@ export class TodoController {
     body: {todo: Todo; items: Item[]},
   ): Promise<Todo> {
     const {todo, items} = body;
-    console.log(body)
 
     if (!todo.title) {
       throw new HttpErrors.BadRequest('Todo title is required.');
     }
-    console.log('1')
     return this.todoService.createTodoWithItems(todo, items);
   }
 

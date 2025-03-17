@@ -43,7 +43,7 @@ export class Todo extends Entity {
     type: 'boolean',
     default: () => false,
   })
-  isDeleted: boolean;
+  isDeleted?: boolean;
 
   @hasMany(() => Item)
   items: Item[];
