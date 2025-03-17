@@ -10,6 +10,11 @@ export class TodoService {
   ) { }
 
   async createTodoWithItems(todoData: Todo, itemsData: Item[]): Promise<Todo> {
+
+    console.log(todoData)
+    console.log(itemsData)
+    console.log(2)
+
     // 先建立 Todo
     const todo = await this.todoRepository.create(todoData);
 
