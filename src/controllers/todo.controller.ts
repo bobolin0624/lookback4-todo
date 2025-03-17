@@ -6,6 +6,7 @@ import {
   getModelSchemaRef,
   HttpErrors,
   param,
+  patch,
   post,
   requestBody,
   response
@@ -23,7 +24,7 @@ export class TodoController {
 
   @post('/todos')
   @response(200, {
-    description: 'Create todo successful.',
+    description: 'Todo created successfully.',
     content: {'application/json': {schema: getModelSchemaRef(Todo)}},
   })
   // TODO add todo with items
@@ -137,6 +138,53 @@ export class TodoController {
     await this.todoRepository.updateById(id, todo);
   }
 
+  @patch('/todos/{id}')
+  @response(200, {
+    description: 'Todo updated successfully.',
+    content: {'application/json': {schema: getModelSchemaRef(Todo)}}
+  })
+  async updateById(
+    @param.path.number('id') id: number,
+    @requestBody({
+      description: 'Update Todo by todo id.',
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              title: {type: 'string'},
+              subtitle: {type: 'string', nullable: true},
+              status: {
+                type: 'string',
+                enum: ['ACTIVE', 'INACTIVE', 'DELETED'],
+                default: 'INACTIVE',
+              },
+            },
+          },
+          example: {
+            title: 'Buy Groceries',
+            subtitle: 'For the week',
+            status: 'INACTIVE'
+          },
+        },
+      },
+    })
+    todo: Todo,
+  ): Promise<void> {
+    const todoById = await this.todoRepository.findById(id);
+    if (!todoById) {
+      throw HttpErrors.NotFound('Todo not found.')
+    }
+
+    const updateTodo = {
+      ...todo,
+      updatedAt: new Date().toISOString()
+    }
+
+    await this.todoRepository.updateById(id, updateTodo);
+  }
+
   // @get('/todos')
   // @response(200, {
   //   description: 'Array of Todo model instances',
@@ -173,37 +221,5 @@ export class TodoController {
   // ): Promise<Count> {
   //   return this.todoRepository.updateAll(todo, where);
   // }
-
-
-
-  // @patch('/todos/{id}')
-  // @response(204, {
-  //   description: 'Todo PATCH success',
-  // })
-  // async updateById(
-  //   @param.path.number('id') id: number,
-  //   @requestBody({
-  //     content: {
-  //       'application/json': {
-  //         schema: getModelSchemaRef(Todo, {partial: true}),
-  //       },
-  //     },
-  //   })
-  //   todo: Todo,
-  // ): Promise<void> {
-  //   await this.todoRepository.updateById(id, todo);
-  // }
-
-  // @put('/todos/{id}')
-  // @response(204, {
-  //   description: 'Todo PUT success',
-  // })
-  // async replaceById(
-  //   @param.path.number('id') id: number,
-  //   @requestBody() todo: Todo,
-  // ): Promise<void> {
-  //   await this.todoRepository.replaceById(id, todo);
-  // }
-
 
 }
