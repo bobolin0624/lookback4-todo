@@ -193,28 +193,38 @@ export class TodoController {
         schema: {
           type: 'array',
           items: getModelSchemaRef(Todo, {includeRelations: true}),
+          totalCount: {
+            type: 'number'
+          }
         },
       },
     },
   })
-  async find(
-    @param.query.string('status') status: string, // filter by status
+  async getAllTodos(
+    @param.query.string('status') status?: string, // ACTIVE OR INACTIVE
     @param.query.number('limit') limit: number = 10,
     @param.query.number('offset') offset: number = 0,
-  ): Promise<Todo[]> {
+  ): Promise<{todos: Todo[]; totalCount: number}> {
 
-    // TODO need to add filter and pagination
+    const whereClause: any = {isDeleted: false};
+    if (status) {
+      whereClause.status = status;
+    }
+
     const todos = await this.todoRepository.find({
-      where: {isDeleted: false},
+      where: whereClause,
+      limit,
+      skip: offset,
       include: [
         {
           relation: 'items'
         }
-      ]
+      ],
     });
-    if (todos.length === 0) {
-      throw new HttpErrors.NotFound('There is no todos.')
-    }
-    return todos;
+
+    return {
+      todos,
+      totalCount: todos.length
+    };
   }
 }
