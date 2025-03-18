@@ -185,21 +185,36 @@ export class TodoController {
     await this.todoRepository.updateById(id, updateTodo);
   }
 
-  // @get('/todos')
-  // @response(200, {
-  //   description: 'Array of Todo model instances',
-  //   content: {
-  //     'application/json': {
-  //       schema: {
-  //         type: 'array',
-  //         items: getModelSchemaRef(Todo, {includeRelations: true}),
-  //       },
-  //     },
-  //   },
-  // })
-  // async find(
-  //   @param.filter(Todo) filter?: Filter<Todo>,
-  // ): Promise<Todo[]> {
-  //   return this.todoRepository.find(filter);
-  // }
+  @get('/todos')
+  @response(200, {
+    description: 'List of Todos',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(Todo, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async find(
+    @param.query.string('status') status: string, // filter by status
+    @param.query.number('limit') limit: number = 10,
+    @param.query.number('offset') offset: number = 0,
+  ): Promise<Todo[]> {
+
+    // TODO need to add filter and pagination
+    const todos = await this.todoRepository.find({
+      where: {isDeleted: false},
+      include: [
+        {
+          relation: 'items'
+        }
+      ]
+    });
+    if (todos.length === 0) {
+      throw new HttpErrors.NotFound('There is no todos.')
+    }
+    return todos;
+  }
 }
