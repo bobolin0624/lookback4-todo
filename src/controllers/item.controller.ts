@@ -2,16 +2,21 @@ import {
   repository
 } from '@loopback/repository';
 import {
+  del,
   getModelSchemaRef,
+  HttpErrors,
+  param,
   post,
   requestBody,
   response
 } from '@loopback/rest';
 import {Item} from '../models';
-import {ItemRepository} from '../repositories';
+import {ItemRepository, TodoRepository} from '../repositories';
 
 export class ItemController {
   constructor(
+    @repository(TodoRepository)
+    public todoRepository: TodoRepository,
     @repository(ItemRepository)
     public itemRepository: ItemRepository,
   ) { }
@@ -38,16 +43,20 @@ export class ItemController {
     })
     item: Omit<Item, 'id'>,
   ): Promise<Item> {
+    const todo = await this.todoRepository.findById(item.todoId)
+    if (!todo) {
+      throw HttpErrors.NotFound(`Todo not found.`)
+    }
     return this.itemRepository.create(item);
   }
 
-  // @del('/items/{id}')
-  // @response(204, {
-  //   description: 'Item DELETE success',
-  // })
-  // async deleteById(@param.path.number('id') id: number): Promise<void> {
-  //   await this.itemRepository.deleteById(id);
-  // }
+  @del('/items/{id}')
+  @response(204, {
+    description: 'Item deleted successfully.',
+  })
+  async deleteById(@param.path.number('id') id: number): Promise<void> {
+    await this.itemRepository.deleteById(id);
+  }
 
   // @get('/items')
   // @response(200, {
