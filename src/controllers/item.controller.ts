@@ -6,6 +6,7 @@ import {
   getModelSchemaRef,
   HttpErrors,
   param,
+  patch,
   post,
   requestBody,
   response
@@ -34,7 +35,8 @@ export class ItemController {
             type: 'object',
             properties: {
               todoId: {type: 'number'},
-              content: {type: 'string'}
+              content: {type: 'string'},
+              isCompleted: {type: 'boolean'}
             },
             required: ['todoId', 'content']
           },
@@ -48,6 +50,43 @@ export class ItemController {
       throw HttpErrors.NotFound(`Todo not found.`)
     }
     return this.itemRepository.create(item);
+  }
+
+  @patch('/items/{id}')
+  @response(204, {
+    description: 'Item updated successfully.',
+  })
+  async updateById(
+    @param.path.number('id') id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          // schema: getModelSchemaRef(Item, {partial: true}),
+          schema: {
+            type: 'object',
+            properties: {
+              content: {type: 'string'},
+              isCompleted: {type: 'boolean'}
+            }
+          },
+        },
+      },
+    })
+    item: Item,
+  ): Promise<void> {
+    const itemInDB = await this.itemRepository.findById(id)
+    if (!itemInDB) {
+      throw HttpErrors.NotFound('Item not found.')
+    }
+
+    if (item.isCompleted === true) {
+      item.completedAt = new Date().toISOString();
+    }
+    item.updatedAt = new Date().toISOString();
+
+    console.log(item)
+
+    await this.itemRepository.updateById(id, item);
   }
 
   @del('/items/{id}')
@@ -74,59 +113,6 @@ export class ItemController {
   //   @param.filter(Item) filter?: Filter<Item>,
   // ): Promise<Item[]> {
   //   return this.itemRepository.find(filter);
-  // }
-
-  // @patch('/items')
-  // @response(200, {
-  //   description: 'Item PATCH success count',
-  //   content: {'application/json': {schema: CountSchema}},
-  // })
-  // async updateAll(
-  //   @requestBody({
-  //     content: {
-  //       'application/json': {
-  //         schema: getModelSchemaRef(Item, {partial: true}),
-  //       },
-  //     },
-  //   })
-  //   item: Item,
-  //   @param.where(Item) where?: Where<Item>,
-  // ): Promise<Count> {
-  //   return this.itemRepository.updateAll(item, where);
-  // }
-
-  // @get('/items/{id}')
-  // @response(200, {
-  //   description: 'Item model instance',
-  //   content: {
-  //     'application/json': {
-  //       schema: getModelSchemaRef(Item, {includeRelations: true}),
-  //     },
-  //   },
-  // })
-  // async findById(
-  //   @param.path.number('id') id: number,
-  //   @param.filter(Item, {exclude: 'where'}) filter?: FilterExcludingWhere<Item>
-  // ): Promise<Item> {
-  //   return this.itemRepository.findById(id, filter);
-  // }
-
-  // @patch('/items/{id}')
-  // @response(204, {
-  //   description: 'Item PATCH success',
-  // })
-  // async updateById(
-  //   @param.path.number('id') id: number,
-  //   @requestBody({
-  //     content: {
-  //       'application/json': {
-  //         schema: getModelSchemaRef(Item, {partial: true}),
-  //       },
-  //     },
-  //   })
-  //   item: Item,
-  // ): Promise<void> {
-  //   await this.itemRepository.updateById(id, item);
   // }
 
   // @put('/items/{id}')
