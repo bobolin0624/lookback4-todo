@@ -3,6 +3,7 @@ import {
 } from '@loopback/repository';
 import {
   del,
+  get,
   getModelSchemaRef,
   HttpErrors,
   param,
@@ -84,17 +85,31 @@ export class ItemController {
     }
     item.updatedAt = new Date().toISOString();
 
-    console.log(item)
-
-    await this.itemRepository.updateById(id, item);
+    return this.itemRepository.updateById(id, item);
   }
 
   @del('/items/{id}')
   @response(204, {
     description: 'Item deleted successfully.',
   })
-  async deleteById(@param.path.number('id') id: number): Promise<void> {
-    await this.itemRepository.deleteById(id);
+  async deleteItemById(@param.path.number('id') id: number): Promise<void> {
+    return this.itemRepository.deleteById(id);
+  }
+
+  @get('/items/{id}')
+  @response(200, {
+    description: 'Get Item by id.',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'object',
+          items: getModelSchemaRef(Item, {includeRelations: true}),
+        },
+      },
+    },
+  })
+  async getItemById(@param.path.number('id') id: number): Promise<Item> {
+    return this.itemRepository.findById(id);
   }
 
   // @get('/items')
@@ -113,24 +128,5 @@ export class ItemController {
   //   @param.filter(Item) filter?: Filter<Item>,
   // ): Promise<Item[]> {
   //   return this.itemRepository.find(filter);
-  // }
-
-  // @put('/items/{id}')
-  // @response(204, {
-  //   description: 'Item PUT success',
-  // })
-  // async replaceById(
-  //   @param.path.number('id') id: number,
-  //   @requestBody() item: Item,
-  // ): Promise<void> {
-  //   await this.itemRepository.replaceById(id, item);
-  // }
-
-  // @del('/items/{id}')
-  // @response(204, {
-  //   description: 'Item DELETE success',
-  // })
-  // async deleteById(@param.path.number('id') id: number): Promise<void> {
-  //   await this.itemRepository.deleteById(id);
   // }
 }

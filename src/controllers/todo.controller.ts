@@ -27,7 +27,6 @@ export class TodoController {
     description: 'Todo created successfully.',
     content: {'application/json': {schema: getModelSchemaRef(Todo)}},
   })
-  // TODO add todo with items
   async createTodoWithItems(
     @requestBody({
       description: 'Create a new Todo with multiple Items',
