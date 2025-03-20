@@ -1,5 +1,5 @@
 import {inject} from '@loopback/core';
-import {repository} from '@loopback/repository';
+import {repository, Where} from '@loopback/repository';
 import {
   del,
   get,
@@ -205,9 +205,9 @@ export class TodoController {
     @param.query.number('offset') offset: number = 0,
   ): Promise<{todos: Todo[]; totalCount: number}> {
 
-    const whereClause: any = {isDeleted: false};
-    if (status) {
-      whereClause.status = status;
+    const whereClause: Partial<Where<Todo>> = {isDeleted: false}
+    if (status && ['ACTIVE', 'INACTIVE', 'DELETED'].includes(status)) {
+      whereClause.status = status as 'ACTIVE' | 'INACTIVE' | 'DELETED';
     }
 
     const todos = await this.todoRepository.find({

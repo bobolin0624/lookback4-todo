@@ -32,7 +32,7 @@ export class DbDataSource extends juggler.DataSource
   }
 }
 
-async function testMySQLConnection() {
+export async function testMySQLConnection() {
   try {
     await new DbDataSource().connect();
     console.log('✅ 成功連線到資料庫！');
@@ -41,4 +41,3 @@ async function testMySQLConnection() {
   }
 }
 
-testMySQLConnection()
