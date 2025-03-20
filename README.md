@@ -18,6 +18,14 @@ To only install resolved dependencies in `package-lock.json`:
 npm ci
 ```
 
+## Database Setup (MySQL)
+Ensure you have a running MySQL database and create a database for this project.
+
+Configure your database connection in `src/datasources/db.datasource.ts`.
+
+You can use `.env` file to setting the env.
+
+
 ## Run the application
 
 ```sh
@@ -27,6 +35,32 @@ npm start
 You can also run `node .` to skip the build step.
 
 Open http://127.0.0.1:3000 in your browser.
+Open http://127.0.0.1:3000/explorer/ to get the api docs.
+
+```
+#Todo API
+
+Create a Todo - POST /todos
+
+Retrieve Todos (with filtering and pagination) - GET /todos
+
+Retrieve a single Todo and its Items - GET /todos/{id}
+
+Update a Todo - PATCH /todos/{id}
+
+Soft delete a Todo - DELETE /todos/{id}
+
+#Item API
+
+Create an Item - POST /items
+
+Retrieve Items under a Todo (Supports filtering) - GET /todos/{todoId}/items
+
+Update an Item - PATCH /items/{id}
+
+Hard delete an Item - DELETE /items/{id}
+```
+
 
 ## Rebuild the project
 
